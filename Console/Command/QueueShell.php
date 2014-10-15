@@ -351,23 +351,28 @@ class QueueShell extends AppShell {
 			->description(__d('cake_console', "..."))
 			->addSubcommand('clean', array(
 				'help' => __d('cake_console', 'Remove old jobs (cleanup)'),
-				'parser' => $subcommandParser
+				// 'parser' => $subcommandParser
 			))
 			->addSubcommand('add', array(
 				'help' => __d('cake_console', 'Add Job'),
-				'parser' => $subcommandParser
+				// 'parser' => $subcommandParser
 			))
 			->addSubcommand('install', array(
 				'help' => __d('cake_console', 'Install info'),
-				'parser' => $subcommandParser
+				// 'parser' => $subcommandParser
 			))
 			->addSubcommand('uninstall', array(
 				'help' => __d('cake_console', 'Uninstall info'),
-				'parser' => $subcommandParser
+				// 'parser' => $subcommandParser
 			))
 			->addSubcommand('runworker', array(
 				'help' => __d('cake_console', 'Run Worker'),
-				'parser' => $subcommandParserFull
+				// 'parser' => $subcommandParserFull
+			))
+			->addOption('group', array(
+				'short' => 'g',
+				'help' => __d('cake_console', 'Group'),
+				'default' => ''
 			));
 	}
 
