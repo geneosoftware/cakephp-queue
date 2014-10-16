@@ -346,7 +346,6 @@ class QueueShell extends AppShell {
 			'help' => __d('cake_console', 'Group'),
 			'default' => ''
 		);
-
 		return parent::getOptionParser()
 			->description(__d('cake_console', "..."))
 			->addSubcommand('clean', array(
