@@ -50,7 +50,7 @@ class QueueSchema extends CakeSchema {
 		'notbefore' => array('type' => 'datetime', 'null' => true, 'default' => null),
 		'maxconcurrence' => array('type' => 'integer', 'null' => false, 'default' => 0, 'length' => 10),
 		'fetched' => array('type' => 'datetime', 'null' => true, 'default' => null),
-		'running' => array('type' => 'tinyint', 'null' => false, 'default' => 0, 'length' => 1),
+		'running' => array('type' => 'boolean', 'null' => false, 'default' => 0, 'length' => 1),
 		'completed' => array('type' => 'datetime', 'null' => true, 'default' => null),
 		'failed' => array('type' => 'integer', 'null' => false, 'default' => '0', 'length' => 3),
 		'failure_message' => array('type' => 'text', 'null' => true, 'default' => null, 'collate' => 'utf8_unicode_ci', 'charset' => 'utf8'),
