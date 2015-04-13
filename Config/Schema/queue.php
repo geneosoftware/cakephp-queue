@@ -66,10 +66,22 @@ class QueueSchema extends CakeSchema {
 			'null' => true,
 			'default' => null
 		),
+		'maxconcurrence' => array(
+			'type' => 'integer',
+			'null' => false,
+			'default' => 0,
+			'length' => 10
+		),
 		'fetched' => array(
 			'type' => 'datetime',
 			'null' => true,
 			'default' => null
+		),
+		'running' => array(
+			'type' => 'tinyint',
+			'null' => false,
+			'default' => 0,
+			'length' => 1
 		),
 		'completed' => array(
 			'type' => 'datetime',

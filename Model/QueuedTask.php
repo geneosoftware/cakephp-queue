@@ -56,12 +56,13 @@ class QueuedTask extends QueueAppModel {
  * @param string $reference An optional reference string.
  * @return array            Created Job array containing id, data, ...
  */
-	public function createJob($jobName, $data = null, $notBefore = null, $group = null, $reference = null) {
+	public function createJob($jobName, $data = null, $notBefore = null, $group = null, $reference = null, $maxconcurrence = 0) {
 		$data = array(
 			'jobtype' => $jobName,
 			'data' => serialize($data),
 			'group' => $group,
-			'reference' => $reference
+			'reference' => $reference,
+			'maxconcurrence' => $maxconcurrence
 		);
 		if ($notBefore !== null) {
 			$data['notbefore'] = date('Y-m-d H:i:s', strtotime($notBefore));
@@ -133,7 +134,11 @@ class QueuedTask extends QueueAppModel {
 						)
 					)
 				),
-				'failed <' => ($task['retries'] + 1)
+				'failed <' => ($task['retries'] + 1),
+				'OR' => array(
+					array('maxconcurrence =' => 0),
+					array('maxconcurrence >' => $this->getLengthInProgress($name, $task['retries'], $task['timeout']))
+				)
 			);
 			if (array_key_exists('rate', $task) && $tmp['jobtype'] && array_key_exists($tmp['jobtype'], $this->rateHistory)) {
 				$tmp['NOW() >='] = date('Y-m-d H:i:s', $this->rateHistory[$tmp['jobtype']] + $task['rate']);
@@ -160,7 +165,7 @@ class QueuedTask extends QueueAppModel {
 		//debug($key);ob_flush();
 
 		// try to update one of the found tasks with the key of this worker.
-		$this->query('UPDATE ' . $this->tablePrefix . $this->table . ' SET workerkey = "' . $key . '", fetched = "' . date('Y-m-d H:i:s') . '" WHERE ' . implode(' OR ', $whereClause) . ' ORDER BY ' . $this->virtualFields['age'] . ' ASC, id ASC LIMIT 1');
+		$this->query('UPDATE ' . $this->tablePrefix . $this->table . ' SET workerkey = "' . $key . '", fetched = "' . date('Y-m-d H:i:s') . '", running = 1 WHERE ' . implode(' OR ', $whereClause) . ' ORDER BY ' . $this->virtualFields['age'] . ' ASC, id ASC LIMIT 1');
 
 		// Read which one actually got updated, which is the job we are supposed to execute.
 		$data = $this->find('first', array(
@@ -209,7 +214,8 @@ class QueuedTask extends QueueAppModel {
  */
 	public function markJobDone($id) {
 		$fields = array(
-			$this->alias . '.completed' => "'" . date('Y-m-d H:i:s') . "'"
+			$this->alias . '.completed' => "'" . date('Y-m-d H:i:s') . "'",
+			$this->alias . '.running' => false
 		);
 		$conditions = array(
 			$this->alias . '.id' => $id
@@ -227,7 +233,7 @@ class QueuedTask extends QueueAppModel {
 	public function markJobFailed($id, $failureMessage = null) {
 		$fields = array(
 			$this->alias . '.failed' => $this->alias . '.failed + 1',
-			$this->alias . '.failure_message' => $failureMessage,
+			$this->alias . '.failure_message' => $failureMessage
 		);
 		$conditions = array(
 			$this->alias . '.id' => $id
@@ -251,6 +257,34 @@ class QueuedTask extends QueueAppModel {
 		if ($type !== null) {
 			$findCond['conditions']['jobtype'] = $type;
 		}
+		return $this->find('count', $findCond);
+	}
+
+/**
+ * Returns the number of items that are currently being executed.
+ * Either returns the number of ALL active types, or the number of the active tasks of the passed Type.
+ *
+ * @param  string $type    	jobType to Count
+ * @param  int $retries 	number of retries specified
+ * @return int Length
+ */
+	public function getLengthInProgress($type = null, $retries = 0, $timeout) {
+		if (empty($timeout)) {
+			$timeout = Configure::read('Queue.defaultworkertimeout');
+		}
+
+		$findCond = array(
+			'conditions' => array(
+				'completed' => null,
+				'fetched !=' => null,
+				'running' => true,
+				'failed <=' => $retries,
+			)
+		);
+		if ($type !== null) {
+			$findCond['conditions']['jobtype'] = $type;
+		}
+
 		return $this->find('count', $findCond);
 	}
 
