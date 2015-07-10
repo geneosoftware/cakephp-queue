@@ -129,15 +129,15 @@ class QueuedTask extends QueueAppModel {
 					),
 					array(
 						'OR' => array(
-							'fetched <' => date('Y-m-d H:i:s', time() - $task['timeout']),
-							'fetched' => null
+							array('fetched < ' => date('Y-m-d H:i:s', time() - $task['timeout'])),
+							array('fetched' => null)
 						)
 					)
 				),
 				'failed <' => ($task['retries'] + 1),
 				'OR' => array(
-					array('maxconcurrence =' => 0),
-					array('maxconcurrence >' => $this->getLengthInProgress($name, $task['retries'], $task['timeout']))
+					array('maxconcurrence = ' => 0),
+					array('maxconcurrence > ' => $this->getLengthInProgress($name, $task['retries']))
 				)
 			);
 			if (array_key_exists('rate', $task) && $tmp['jobtype'] && array_key_exists($tmp['jobtype'], $this->rateHistory)) {
@@ -233,7 +233,8 @@ class QueuedTask extends QueueAppModel {
 	public function markJobFailed($id, $failureMessage = null) {
 		$fields = array(
 			$this->alias . '.failed' => $this->alias . '.failed + 1',
-			$this->alias . '.failure_message' => $failureMessage
+			$this->alias . '.failure_message' => '"' .$failureMessage. '"',
+			$this->alias . '.running' => false
 		);
 		$conditions = array(
 			$this->alias . '.id' => $id
@@ -268,11 +269,7 @@ class QueuedTask extends QueueAppModel {
  * @param  int $retries 	number of retries specified
  * @return int Length
  */
-	public function getLengthInProgress($type = null, $retries = 0, $timeout) {
-		if (empty($timeout)) {
-			$timeout = Configure::read('Queue.defaultworkertimeout');
-		}
-
+	public function getLengthInProgress($type = null, $retries = 0) {
 		$findCond = array(
 			'conditions' => array(
 				'completed' => null,

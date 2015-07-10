@@ -222,6 +222,9 @@ class QueueShell extends AppShell {
 							$failureMessage = $this->{$taskname}->failureMessage;
 						}
 						$this->QueuedTask->markJobFailed($data['id'], $failureMessage);
+						if (isset($data['data']['temp_table'])) {
+							$this->{$taskname}->tearDownResources($data['data']);
+						}
 						$this->out('Job did not finish, requeued.');
 					}
 				} elseif (Configure::read('Queue.exitwhennothingtodo')) {
