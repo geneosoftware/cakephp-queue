@@ -243,6 +243,10 @@ class QueueShell extends AppShell {
 				if ($this->_exit || rand(0, 100) > (100 - Configure::read('Queue.gcprop'))) {
 					$this->out('Performing Old job cleanup.');
 					$this->QueuedTask->cleanOldJobs();
+
+					if (isset($data['data']['temp_table'])) {
+						$this->{$taskname}->tearDownResources($data['data']);
+					}
 				}
 				$this->hr();
 			}
