@@ -132,13 +132,15 @@ class QueuedTask extends QueueAppModel {
 							array('fetched < ' => date('Y-m-d H:i:s', time() - $task['timeout'])),
 							array('fetched' => null)
 						)
+					),
+					array(
+						'OR' => array(
+							array('maxconcurrence = ' => 0),
+							array('maxconcurrence > ' => $this->getLengthInProgress($name, $task['retries']))
+						)
 					)
 				),
-				'failed <' => ($task['retries'] + 1),
-				'OR' => array(
-					array('maxconcurrence = ' => 0),
-					array('maxconcurrence > ' => $this->getLengthInProgress($name, $task['retries']))
-				)
+				'failed <' => ($task['retries'] + 1)
 			);
 			if (array_key_exists('rate', $task) && $tmp['jobtype'] && array_key_exists($tmp['jobtype'], $this->rateHistory)) {
 				$tmp['NOW() >='] = date('Y-m-d H:i:s', $this->rateHistory[$tmp['jobtype']] + $task['rate']);
@@ -148,6 +150,7 @@ class QueuedTask extends QueueAppModel {
 
 		// First, find a list of a few of the oldest unfinished tasks.
 		$data = $this->find('all', $findCond);
+
 		if (!$data) {
 			return array();
 		}
@@ -155,7 +158,7 @@ class QueuedTask extends QueueAppModel {
 		// Generate a list of already fetched ID's and a where clause for the update statement
 		$capTimeout = Hash::combine($capabilities, '{s}.name', '{s}.timeout');
 		foreach ($data as $item) {
-			$whereClause[] = '(id = ' . $item[$this->alias]['id'] . ' AND (workerkey IS NULL OR fetched <= "' . date('Y-m-d H:i:s', time() - $capTimeout[$item[$this->alias]['jobtype']]) . '"))';
+			$whereClause[] = '(id = ' . $item[$this->alias]['id'] . ' AND (workerkey IS NULL OR fetched <= "' . date('Y-m-d H:i:s', time() - $capTimeout[$item[$this->alias]['jobtype']]) . '" OR running = 0))';
 			if (!empty($item[$this->alias]['fetched'])) {
 				$wasFetched[] = $item[$this->alias]['id'];
 			}
