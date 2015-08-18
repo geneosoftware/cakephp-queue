@@ -218,7 +218,7 @@ class QueuedTask extends QueueAppModel {
 	public function markJobDone($id) {
 		$fields = array(
 			$this->alias . '.completed' => "'" . date('Y-m-d H:i:s') . "'",
-			$this->alias . '.running' => false
+			$this->alias . '.running' => '0'
 		);
 		$conditions = array(
 			$this->alias . '.id' => $id
