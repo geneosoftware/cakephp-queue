@@ -21,14 +21,14 @@ class CronTask extends QueueAppModel {
 
 	public $validate = array(
 		'jobtype' => array(
-			'notempty' => array(
-				'rule' => array('notempty'),
+			'notBlank' => array(
+				'rule' => array('notBlank'),
 				'message' => 'valErrMandatoryField',
 			),
 		),
 		'name' => array(
-			'notempty' => array(
-				'rule' => array('notempty'),
+			'notBlank' => array(
+				'rule' => array('notBlank'),
 				'message' => 'valErrMandatoryField',
 				'last' => true
 			),
@@ -39,8 +39,8 @@ class CronTask extends QueueAppModel {
 			),
 		),
 		'title' => array(
-			'notempty' => array(
-				'rule' => array('notempty'),
+			'notBlank' => array(
+				'rule' => array('notBlank'),
 				'message' => 'valErrMandatoryField',
 				'last' => true
 			),
