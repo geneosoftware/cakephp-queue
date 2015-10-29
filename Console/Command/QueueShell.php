@@ -206,6 +206,7 @@ class QueueShell extends AppShell {
 				$this->_exit = true;
 			} else {
 				if ($data) {
+					$this->out(date('d-M-Y H:i:s'));
 					$this->out('Running Job of type "' . $data['jobtype'] . '"');
 					$taskname = 'Queue' . $data['jobtype'];
 
