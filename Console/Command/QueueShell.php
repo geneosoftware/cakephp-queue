@@ -200,14 +200,13 @@ class QueueShell extends AppShell {
 				touch($pidFilePath . $pidFileName);
 			}
 			$this->_log('runworker', isset($pid) ? $pid : null);
-			$this->out('Looking for Job....');
+			$this->out('Looking for Job.... ' .date('d-M-Y H:i:s'));
 			$data = $this->QueuedTask->requestJob($this->_getTaskConf(), $group);
 			if ($this->QueuedTask->exit === true) {
 				$this->_exit = true;
 			} else {
 				if ($data) {
-					$this->out(date('d-M-Y H:i:s'));
-					$this->out('Running Job of type "' . $data['jobtype'] . '"');
+					$this->out('Running Job of type "' . $data['jobtype'] . '" - ' .date('d-M-Y H:i:s'));
 					$taskname = 'Queue' . $data['jobtype'];
 
 					if ($this->{$taskname}->autoUnserialize) {
@@ -216,7 +215,7 @@ class QueueShell extends AppShell {
 					$return = $this->{$taskname}->run($data['data'], $data['id']);
 					if ($return) {
 						$this->QueuedTask->markJobDone($data['id']);
-						$this->out('Job Finished.');
+						$this->out('Job Finished at ' .date('d-M-Y H:i:s'));
 					} else {
 						$failureMessage = null;
 						if (isset($this->{$taskname}->failureMessage) && !empty($this->{$taskname}->failureMessage)) {
@@ -229,10 +228,10 @@ class QueueShell extends AppShell {
 						$this->out('Job did not finish, requeued.');
 					}
 				} elseif (Configure::read('Queue.exitwhennothingtodo')) {
-					$this->out('nothing to do, exiting.');
+					$this->out('nothing to do, exiting - ' .date('d-M-Y H:i:s'));
 					$this->_exit = true;
 				} else {
-					$this->out('nothing to do, sleeping.');
+					$this->out('nothing to do, sleeping - ' .date('d-M-Y H:i:s'));
 					sleep(Configure::read('Queue.sleeptime'));
 				}
 
