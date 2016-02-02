@@ -183,12 +183,12 @@ class QueuedTask extends QueueAppModel {
 		}
 
 		// If the job had an existing fetched timestamp, increment the failure counter
-		if (in_array($data[$this->alias]['id'], $wasFetched)) {
-			$data[$this->alias]['failed']++;
-			$data[$this->alias]['failure_message'] = 'Restart after timeout';
-			$this->id = $data[$this->alias]['id'];
-			$this->save($data, false, array('id', 'failed', 'failure_message'));
-		}
+		// if (in_array($data[$this->alias]['id'], $wasFetched)) {
+		// 	$data[$this->alias]['failed']++;
+		// 	$data[$this->alias]['failure_message'] = 'Restart after timeout';
+		// 	$this->id = $data[$this->alias]['id'];
+		// 	$this->save($data, false, array('id', 'failed', 'failure_message'));
+		// }
 		//save last fetch by type for Rate Limiting.
 		$this->rateHistory[$data[$this->alias]['jobtype']] = time();
 		return $data[$this->alias];
