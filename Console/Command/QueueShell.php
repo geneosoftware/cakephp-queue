@@ -144,6 +144,65 @@ class QueueShell extends AppShell {
 		return $task;
 	}
 
+
+	public function reset_zombie_tasks() {
+		$tasks = $this->QueuedTask->find('all', array(
+			'conditions' => array(
+				'running' => true,
+				'not' => array(
+					'fetched' => null
+				)
+			),
+			'fields' => array(
+				'id',
+				'fetched'
+			)
+		));
+
+		foreach($tasks as $task) {
+			$this->out("<warning>Handling {$task['QueuedTask']['id']}</warning>");
+			$taskFetchedTime = new DateTime($task['QueuedTask']['fetched']);
+			$timeDiff = $taskFetchedTime->diff(new DateTime());
+			$timeInMinutes = 	($timeDiff->days * 24 * 60) +
+								($timeDiff->h * 60) + $timeDiff->i;
+
+			$this->out("Time difference is {$timeInMinutes} minutes.");
+
+			if ($timeInMinutes < 30) {
+				$this->out("<info>Skipping...</info>");
+				continue;
+			}
+
+			if (isset($task['QueuedTask']['completed'])) {
+				$this->out("completed but still running...");
+				if ($this->QueuedTask->delete($task['QueuedTask']['id'])) {
+					$this->out("<success>Deleted {$task['QueuedTask']['id']}</success>");
+				} else {
+					$this->out("<error>Could not delete {$task['QueuedTask']['id']}</error>");
+				}
+			} else {
+				$this->out("<info>Resetting {$task['QueuedTask']['id']}</info>");
+				$this->QueuedTask->id = $task['QueuedTask']['id'];
+				$this->QueuedTask->set(array(
+					'running' => 0,
+					'maxconcurrence' => 1,
+					'completed' => null,
+					'failed' => 0,
+					'failure_message' => null,
+					'workerkey' => null,
+					'fetched' => null
+				));
+				if ($this->QueuedTask->save()) {
+					$this->out("<success>Successfully reset {$task['QueuedTask']['id']}</success>");
+				} else {
+					$this->out("<error>Could not reset {$task['QueuedTask']['id']}</error>");
+
+				}
+			}
+		}
+	}
+
+
 /**
  * Run a QueueWorker loop.
  * Runs a Queue Worker process which will try to find unassigned jobs in the queue
@@ -152,6 +211,7 @@ class QueueShell extends AppShell {
  * @return void
  */
 	public function runworker() {
+		$this->reset_zombie_tasks();
 		if ($pidFilePath = Configure::read('Queue.pidfilepath')) {
 			if (!file_exists($pidFilePath)) {
 				mkdir($pidFilePath, 0755, true);
@@ -250,9 +310,6 @@ class QueueShell extends AppShell {
 				}
 				$this->hr();
 			}
-		}
-		if (!empty($pidFilePath)) {
-			unlink($pidFilePath . 'queue_' . $pid . '.pid');
 		}
 	}
 
