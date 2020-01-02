@@ -52,6 +52,11 @@ class QueuedTaskFixture extends CakeTestFixture {
 			'null' => true,
 			'default' => null
 		),
+		'running' => array(
+			'type' => 'boolean',
+			'null' => false,
+			'default' => 0
+		),
 		'completed' => array(
 			'type' => 'datetime',
 			'null' => true,
