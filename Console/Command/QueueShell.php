@@ -151,7 +151,8 @@ class QueueShell extends AppShell {
 				'running' => true,
 				'not' => array(
 					'fetched' => null
-				)
+				),
+				'jobtype' => 'RefreshAuthSets'
 			),
 			'fields' => array(
 				'id',
