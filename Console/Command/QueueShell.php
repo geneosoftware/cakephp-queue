@@ -160,7 +160,7 @@ class QueueShell extends AppShell {
 			)
 		));
 
-		foreach($tasks as $task) {
+		foreach ($tasks as $task) {
 			$this->out("<warning>Handling {$task['QueuedTask']['id']}</warning>");
 			$taskFetchedTime = new DateTime($task['QueuedTask']['fetched']);
 			$timeDiff = $taskFetchedTime->diff(new DateTime());
@@ -176,29 +176,22 @@ class QueueShell extends AppShell {
 
 			if (isset($task['QueuedTask']['completed'])) {
 				$this->out("completed but still running...");
-				if ($this->QueuedTask->delete($task['QueuedTask']['id'])) {
-					$this->out("<success>Deleted {$task['QueuedTask']['id']}</success>");
-				} else {
-					$this->out("<error>Could not delete {$task['QueuedTask']['id']}</error>");
-				}
+			}
+			$this->out("<info>Resetting {$task['QueuedTask']['id']}</info>");
+			$this->QueuedTask->id = $task['QueuedTask']['id'];
+			$this->QueuedTask->set(array(
+				'running' => 0,
+				'maxconcurrence' => 1,
+				'completed' => null,
+				'failed' => 0,
+				'failure_message' => null,
+				'workerkey' => null,
+				'fetched' => null
+			));
+			if ($this->QueuedTask->save()) {
+				$this->out("<success>Successfully reset {$task['QueuedTask']['id']}</success>");
 			} else {
-				$this->out("<info>Resetting {$task['QueuedTask']['id']}</info>");
-				$this->QueuedTask->id = $task['QueuedTask']['id'];
-				$this->QueuedTask->set(array(
-					'running' => 0,
-					'maxconcurrence' => 1,
-					'completed' => null,
-					'failed' => 0,
-					'failure_message' => null,
-					'workerkey' => null,
-					'fetched' => null
-				));
-				if ($this->QueuedTask->save()) {
-					$this->out("<success>Successfully reset {$task['QueuedTask']['id']}</success>");
-				} else {
-					$this->out("<error>Could not reset {$task['QueuedTask']['id']}</error>");
-
-				}
+				$this->out("<error>Could not reset {$task['QueuedTask']['id']}</error>");
 			}
 		}
 	}
