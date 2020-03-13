@@ -312,6 +312,9 @@ class QueueShell extends AppShell {
 				$this->hr();
 			}
 		}
+		if (!empty($pidFilePath)) {
+			unlink($pidFilePath . 'queue_' . $pid . '.pid');
+		}
 	}
 
 /**
